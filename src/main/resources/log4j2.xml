@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="OFF" monitorInterval="200"> 
+	<properties>
+		<property name="LOG_HOME">D:/logs</property>
+		<property name="INFO_LOG_HOME">infolog/infolog</property>
+		<property name="DEBUG_LOG_HOME">debuglog/debuglog</property>
+		<property name="WARN_LOG_HOME">warnlog/warnlog</property>
+		<property name="ERROR_LOG_HOME">errorlog/errorlog</property>
+	</properties>
+	<!-- 定义所有的appender -->
+	<Appenders>
+		<!-- 输出控制台的配置 -->
+		<Console name="Console" target="SYSTEM_OUT">
+			<!-- 定义控制台输出level及以上级别的信息(onMatch)，其他的拒绝(onMismatch) -->
+			<ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"></ThresholdFilter>
+			<!-- 定义日志输出格式 -->
+			<!--
+                %d{yyyy-MM-dd HH:mm:ss, SSS} : 日志生产时间
+                %p : 日志输出格式
+                %c : logger的名称
+                %m : 日志内容，即 logger.info("message")
+                %n : 换行符
+                %C : Java类名
+                %L : 日志输出所在行数
+                %M : 日志输出所在方法名
+                %F:显示调用logger的源文件名
+                hostName : 本地机器名
+                hostAddress : 本地ip地址
+             -->
+			<PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level %L %M - %msg%xEx%n"/>
+		</Console>
+		<RollingRandomAccessFile name="infoLogger" fileName="${LOG_HOME}/${INFO_LOG_HOME}.log"
+			filePattern="${LOG_HOME}/${INFO_LOG_HOME}-%d{yyyy-MM-dd}.log">
+			<PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %level %L %M - %msg%n" />
+			<Filters >
+				<!-- ThresholdFilter: level，表示最低接受的日志级别; onMatch，表示当日志事件的日志级别与level一致时，应怎么做。一般为ACCEPT;
+					 onMismatch，表示日志事件的日志级别与level不一致时，应怎么做。一般为DENY，表示拒绝。也可以为NEUTRAL表示中立。 -->
+				<ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+			</Filters>
+			<!-- 指定滚动日志的策略，即何时进行新建日志文件输出日志 -->
+			<Policies>
+				<!-- Policies子节点，基于时间的滚动策略，interval属性用来指定多久滚动一次，默认是1 hour。modulate=true用来调整时间:如现在是早上3am，interval是4，那么第一次滚动是在4am，接着是8am，12am...而不是7am -->
+				<TimeBasedTriggeringPolicy interval="1"/>
+				<!-- Policies子节点，基于指定文件大小的滚动策略，size属性用来定义每个日志文件的大小 -->
+				<SizeBasedTriggeringPolicy size="1000M"/>
+			</Policies>
+			<!-- 用来指定同一个文件夹下最多有几个日志文件时开始删除最旧的，创建新的(通过max属性) -->
+			<DefaultRolloverStrategy max="20"/>
+		</RollingRandomAccessFile>
+		<!-- RollingFile节点用来定义超过指定大小自动删除旧的创建新的的Appender,常用属性：name（Appender的名字），fileName（输出日志的目的文件带全路径的文件名），
+		PatternLayout（输出格式，默认为:%m%n），filePattern（新建日志文件的名称格式），Policies（滚动日志的策略），DefaultRolloverStrategy -->
+		<RollingFile name="debugLogger" fileName="${LOG_HOME}/${DEBUG_LOG_HOME}.log"
+			filePattern="${LOG_HOME}/${DEBUG_LOG_HOME}-%d{yyyy-MM-dd}.log" immediateFlush="false" bufferSize="512">
+			<PatternLayout
+				pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %level %L %M - %msg%n" />
+			<Filters >
+				<ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+			</Filters>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"/>
+				<SizeBasedTriggeringPolicy size="10000 MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+		<RollingFile name="warnLogger" fileName="${LOG_HOME}/${WARN_LOG_HOME}.log"
+			filePattern="${LOG_HOME}/${WARN_LOG_HOME}-%d{yyyy-MM-dd}.log" immediateFlush="false" bufferSize="512">
+			<PatternLayout
+				pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %level %L %M - %msg%n" />
+			<Filters >
+				<ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+			</Filters>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"/>
+				<SizeBasedTriggeringPolicy size="10000 MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+		<RollingFile name="errorLogger" fileName="${LOG_HOME}/${ERROR_LOG_HOME}.log"
+			filePattern="${LOG_HOME}/${ERROR_LOG_HOME}-%d{yyyy-MM-dd}.log" immediateFlush="false" bufferSize="512">
+			<PatternLayout
+				pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %level - %msg%n" />
+			<Filters >
+				<ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+				<ThresholdFilter level="FATAL" onMatch="ACCEPT" onMismatch="DENY"/>
+			</Filters>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"/>
+				<SizeBasedTriggeringPolicy size="10000 MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<!-- Logger节点用来单独指定日志的形式，如要为指定包下的class指定不同的日志级别等,属性：name,level，子节点：AppenderRef（指定该日志输出到哪个Appender）；
+			 Logger的additivity="false"只在自定义的Appender中进行输出 -->
+		<Logger name="debugLogger" level="DEBUG" additivity="false">
+			<AppenderRef ref="debugLogger"/>
+		</Logger>
+		<Logger name="infoLogger" level="INFO" additivity="false">
+			<AppenderRef ref="infoLogger"/>
+		</Logger>
+		<Logger name="warnLogger" level="WARN" additivity="false">
+			<AppenderRef ref="warnLogger"/>
+		</Logger>
+		<Logger name="errorLogger" level="ERROR" additivity="false">
+			<AppenderRef ref="errorLogger"/>
+		</Logger>
+		<!-- Root节点用来指定项目的根日志，如果没有单独指定Logger，那么就会默认使用该Root日志输出 -->
+		<root level="WARN">
+			<!-- AppenderRef：Root的子节点，用来指定该日志输出到哪个Appender -->
+			<AppenderRef ref="Console"/> 
+			<AppenderRef ref="debugLogger"/> 
+			<AppenderRef ref="infoLogger"/> 
+			<AppenderRef ref="warnLogger"/> 
+			<AppenderRef ref="errorLogger"/> 
+		</root>
+	</Loggers>
+</configuration>
